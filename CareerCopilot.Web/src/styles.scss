@@ -1,0 +1,419 @@
+@use 'app/shared/marker' as *;
+
+// ---------------------------------------------------------------------------
+// "Marked up" — a desk, sheets of paper, and four highlighters.
+//
+// Every highlighter colour means something:
+//   yellow = your résumé · pink = a job posting · blue = other documents
+//   green  = the copilot's own emphasis
+// Ballpoint blue is the user's voice (questions, focus, links).
+// ---------------------------------------------------------------------------
+:root {
+  color-scheme: light;
+
+  --desk: #dce1e4;
+  --desk-deep: #ced4d8;
+  --paper: #ffffff;
+  --paper-2: #f5f7f8;
+  --ink: #1e2226;
+  --pencil: #5f666f;
+  --pencil-faint: #979ea7;
+  --rule: #e4e8eb;
+
+  --ballpoint: #2341d8;
+  --red-pen: #c42b36;
+
+  --hl-yellow: #ffea5c;
+  --hl-pink: #ffa3c8;
+  --hl-blue: #9adfff;
+  --hl-green: #a3f1b5;
+
+  --paper-shadow:
+    0 1px 1px rgb(30 34 38 / 0.07),
+    0 3px 8px -2px rgb(30 34 38 / 0.08),
+    0 22px 44px -28px rgb(30 34 38 / 0.4);
+  --paper-lift:
+    0 1px 1px rgb(30 34 38 / 0.06),
+    0 10px 18px -6px rgb(30 34 38 / 0.16),
+    0 34px 60px -30px rgb(30 34 38 / 0.45);
+
+  // Physical objects keep their colours in any light.
+  --pen-yellow: #ffe14d;
+  --pen-yellow-deep: #e0bb00;
+  --pen-pink: #ff8fbf;
+  --pen-pink-deep: #e2528f;
+  --pen-blue: #86d6ff;
+  --pen-blue-deep: #2b9fd8;
+  --pen-green: #93eca9;
+  --pen-green-deep: #36b862;
+
+  --kraft: #e3c88f;
+  --kraft-deep: #d2b173;
+  --kraft-ink: #5b4520;
+  --tape: rgb(196 214 232 / 0.62);
+  --rule-blue: rgb(35 65 216 / 0.13);
+  --margin-rule: rgb(214 60 72 / 0.38);
+  --lamp: rgb(255 255 255 / 0.7);
+  --grain-opacity: 0.07;
+
+  --font: 'Mona Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --hand: 'Reenie Beanie', 'Segoe Print', cursive;
+  --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --desk: #121417;
+  --desk-deep: #0c0e10;
+  --paper: #1c1f23;
+  --paper-2: #23272c;
+  --ink: #e8eaed;
+  --pencil: #a3aab2;
+  --pencil-faint: #6f767e;
+  --rule: #2c3136;
+
+  --ballpoint: #9daeff;
+  --red-pen: #ff8e94;
+
+  // Under a desk lamp the ink sits on top, so the markers go deep and saturated.
+  --hl-yellow: #6e5f00;
+  --hl-pink: #7d2b52;
+  --hl-blue: #1a5877;
+  --hl-green: #1f6b3b;
+
+  --kraft: #4d3f27;
+  --kraft-deep: #3d311d;
+  --kraft-ink: #e7cf9c;
+  --tape: rgb(150 170 200 / 0.3);
+  --rule-blue: rgb(157 174 255 / 0.1);
+  --margin-rule: rgb(255 142 148 / 0.3);
+  --lamp: rgb(255 214 150 / 0.07);
+  --grain-opacity: 0.12;
+
+  --paper-shadow: 0 1px 1px rgb(0 0 0 / 0.4), 0 22px 44px -28px rgb(0 0 0 / 0.9);
+  --paper-lift: 0 1px 1px rgb(0 0 0 / 0.4), 0 34px 60px -26px rgb(0 0 0 / 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+// Kind → highlighter. Any element with data-kind exposes --hl.
+[data-kind='resume'] { --hl: var(--hl-yellow); }
+[data-kind='jobPosting'] { --hl: var(--hl-pink); }
+[data-kind='other'] { --hl: var(--hl-blue); }
+
+// ---------------------------------------------------------------------------
+// Base
+// ---------------------------------------------------------------------------
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--desk);
+  // Desk surface: a lamp glowing from the top left, and a fine grain.
+  background-image:
+    radial-gradient(ellipse 70% 60% at 12% -5%, var(--lamp), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 105% 110%, rgb(0 0 0 / 0.08), transparent 70%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+  font-variation-settings: 'wdth' 100;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ballpoint);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--hl-green);
+  color: var(--ink);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+// Ballpoint handwriting, for notes on the desk. Short phrases only.
+.hand {
+  font-family: var(--hand);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.marker {
+  @include marker;
+}
+
+@keyframes mark-in {
+  from {
+    background-size: 0% 0.78em;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Buttons: pens on the desk. Pill-shaped, graphite ink or quiet pencil.
+// ---------------------------------------------------------------------------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 38px;
+  padding: 0 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 560;
+  white-space: nowrap;
+  transition:
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    color 0.15s var(--ease);
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &--ink {
+    background: var(--ink);
+    color: var(--paper);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--ink) 85%, var(--ballpoint));
+    }
+  }
+
+  &--quiet {
+    background: transparent;
+    color: var(--pencil);
+
+    &:hover:not(:disabled) {
+      color: var(--ink);
+      background: color-mix(in srgb, var(--ink) 7%, transparent);
+    }
+  }
+
+  &--line {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+    color: var(--ink);
+
+    &:hover:not(:disabled) {
+      border-color: var(--ink);
+    }
+  }
+
+  &--sm {
+    height: 30px;
+    padding: 0 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  &--icon {
+    width: 38px;
+    padding: 0;
+
+    &.btn--sm {
+      width: 30px;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rendered Markdown from the copilot. Bold = green highlighter.
+// ---------------------------------------------------------------------------
+.prose {
+  font-size: 1.02rem;
+  line-height: 1.72;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  max-width: 66ch;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  pre,
+  table {
+    margin: 0 0 0.9em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 720;
+    font-variation-settings: 'wdth' 112;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 1.5em 0 0.45em;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+  }
+
+  h3,
+  h4 {
+    font-size: 1.02rem;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.3em;
+  }
+
+  li {
+    margin: 0.3em 0;
+    padding-left: 0.2em;
+  }
+
+  li::marker {
+    color: var(--pencil-faint);
+  }
+
+  strong {
+    font-weight: 640;
+    @include marker(var(--hl-green));
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  a {
+    color: var(--ballpoint);
+    text-underline-offset: 3px;
+  }
+
+  code {
+    font-size: 0.9em;
+    background: var(--paper-2);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: var(--paper-2);
+    padding: 0.9rem 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  blockquote {
+    border-left: 2px solid var(--pencil-faint);
+    padding-left: 1rem;
+    color: var(--pencil);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.92em;
+    display: block;
+    overflow-x: auto;
+  }
+
+  th,
+  td {
+    border-bottom: 1px solid var(--rule);
+    padding: 0.45rem 0.9rem 0.45rem 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 640;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 1.4em 0;
+  }
+
+  // The finished answer gets marked up, one phrase after another.
+  &.marking strong {
+    animation: mark-in 0.55s var(--ease) both;
+    animation-delay: calc(var(--i, 0) * 140ms + 120ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

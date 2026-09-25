@@ -1,0 +1,124 @@
+<div class="pens-area">
+  <p class="hand pens-note" id="pen-label">pick a highlighter for new files</p>
+  <div class="pens" role="radiogroup" aria-labelledby="pen-label">
+    @for (kind of kinds; track kind.value) {
+      <button
+        type="button"
+        role="radio"
+        class="pen"
+        [attr.data-pen]="kind.value"
+        [class.selected]="selectedKind() === kind.value"
+        [attr.aria-checked]="selectedKind() === kind.value"
+        (click)="selectedKind.set(kind.value)"
+      >
+        <span class="barrel">{{ kind.label }}</span>
+        <span class="tip" aria-hidden="true"></span>
+        <span class="cap" aria-hidden="true"><span class="clip"></span></span>
+      </button>
+    }
+  </div>
+</div>
+
+<section class="folder" aria-labelledby="folder-label">
+  <div class="folder-head">
+    <h2 id="folder-label" class="folder-tab">Your documents</h2>
+    <button type="button" class="btn btn--quiet btn--sm btn--icon reload" title="Reload the list" aria-label="Reload the list"
+            [disabled]="store.loading()" (click)="store.refresh()">
+      <app-icon [name]="store.loading() ? 'spinner' : 'refresh'" [size]="15" />
+    </button>
+  </div>
+
+  <div class="folder-body">
+    <label
+      class="drop"
+      [attr.data-kind]="selectedKind()"
+      [class.dragging]="dragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="dragging.set(false)"
+      (drop)="onDrop($event)"
+    >
+      <input #fileInput type="file" accept="application/pdf,.pdf" multiple class="sr-only" (change)="onFilesPicked(fileInput)" />
+      <span class="drop-title">Drop PDFs here or <u>choose files</u></span>
+      <span class="drop-note">They'll be marked <span class="marker">{{ kindLabels[selectedKind()] }}</span>. Up to 10 MB each.</span>
+    </label>
+    <button type="button" class="paste-instead" (click)="paste.open(selectedKind())">
+      <app-icon name="pen" [size]="14" /> Paste text or a link instead
+    </button>
+
+    @if (store.needsReindex().length; as count) {
+      <div class="taped-note" role="status">
+        <p class="hand note-title">needs re-indexing</p>
+        <p>
+          {{ count === 1 ? '1 document isn’t' : count + ' documents aren’t' }} searchable. The search index resets whenever the API restarts.
+        </p>
+        <button type="button" class="btn btn--line btn--sm" (click)="store.reindexAll()">Re-index {{ count === 1 ? 'it' : 'all' }}</button>
+      </div>
+    }
+
+    <ul class="slips" role="list">
+      @for (upload of store.uploads(); track upload.id) {
+        <li class="slip pending" [attr.data-kind]="upload.kind">
+          <span class="name marker">{{ upload.name }}</span>
+          <span class="meta reading">Reading and indexing…</span>
+        </li>
+      }
+
+      @for (doc of store.documents(); track doc.name) {
+        @let busy = store.busy().has(doc.name);
+        @let confirming = confirmingDelete() === doc.name;
+        <li class="slip" [attr.data-kind]="doc.kind" [class.busy]="busy">
+          <a class="name marker" [href]="api.fileUrl(doc.name)" target="_blank" rel="noopener" [title]="'Open ' + doc.name">{{ doc.name }}</a>
+          <span class="meta">
+            {{ kindLabels[doc.kind] }}@if (doc.sourceUrl) {
+              from <a class="source" [href]="doc.sourceUrl" target="_blank" rel="noopener">{{ hostOf(doc.sourceUrl) }}</a>
+            } @else if (doc.format === 'text') {, pasted text} @else {, {{ doc.sizeBytes | fileSize }}}@if (doc.uploadedAt) {, added {{ doc.uploadedAt | timeAgo }}}
+          </span>
+
+          @if (busy) {
+            <span class="meta reading">Working on it…</span>
+          } @else if (!doc.isIndexed) {
+            <span class="meta unsearchable">Not searchable yet.
+              <button type="button" class="text-btn" (click)="store.reindex(doc.name)">Re-index</button>
+            </span>
+          }
+
+          <div class="actions">
+            <button type="button" class="btn btn--quiet btn--sm btn--icon" title="Re-index" [attr.aria-label]="'Re-index ' + doc.name"
+                    [disabled]="busy" (click)="store.reindex(doc.name)">
+              <app-icon name="refresh" [size]="14" />
+            </button>
+            <button type="button" class="btn btn--sm delete" [class.btn--icon]="!confirming" [class.btn--quiet]="!confirming" [class.confirming]="confirming"
+                    [title]="confirming ? 'Click again to delete' : 'Delete'"
+                    [attr.aria-label]="(confirming ? 'Confirm: delete ' : 'Delete ') + doc.name"
+                    [disabled]="busy" (click)="requestDelete(doc)">
+              @if (confirming) { Delete? } @else { <app-icon name="trash" [size]="14" /> }
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (store.loadError(); as error) {
+      <div class="taped-note error" role="alert">
+        <p class="hand note-title">can't open the folder</p>
+        <p>{{ error }}</p>
+        <button type="button" class="btn btn--line btn--sm" [disabled]="store.loading()"
+                [attr.aria-busy]="store.loading()" (click)="store.refresh()">
+          @if (store.loading()) {
+            <app-icon name="spinner" [size]="14" /> Trying…
+          } @else {
+            Try again
+          }
+        </button>
+      </div>
+    } @else if (!store.loaded()) {
+      <ul class="slips" aria-hidden="true">
+        @for (i of [1, 2]; track i) {
+          <li class="slip ghost"><span></span><span></span></li>
+        }
+      </ul>
+    } @else if (!store.documents().length && !store.uploads().length) {
+      <p class="empty">The folder is empty. Add your résumé and a job posting you're interested in.</p>
+    }
+  </div>
+</section>

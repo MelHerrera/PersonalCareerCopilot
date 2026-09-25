@@ -1,0 +1,73 @@
+<header class="topbar">
+  <button type="button" class="btn btn--quiet btn--icon open-drawer" aria-label="Show your documents" (click)="sidebarOpen.set(true)">
+    <app-icon name="panel" />
+  </button>
+
+  <a class="brand" href="/" aria-label="Career Copilot home">
+    <svg class="brand-mark" viewBox="0 0 30 24" width="30" height="24" aria-hidden="true">
+      <g transform="skewX(-14) translate(5 0)">
+        <rect x="1" y="2" width="4.5" height="20" rx="1" fill="var(--hl-yellow)" />
+        <rect x="7.5" y="2" width="4.5" height="20" rx="1" fill="var(--hl-pink)" />
+        <rect x="14" y="2" width="4.5" height="20" rx="1" fill="var(--hl-blue)" />
+        <rect x="20.5" y="2" width="4.5" height="20" rx="1" fill="var(--hl-green)" />
+      </g>
+    </svg>
+    <span class="wordmark">Career Copilot</span>
+  </a>
+
+  <div class="topbar-actions">
+    @if (!chat.isEmpty()) {
+      <button type="button" class="btn btn--line btn--sm" (click)="newChat()">New conversation</button>
+    }
+    <button type="button" class="btn btn--quiet btn--icon" (click)="theme.toggle()"
+            [attr.aria-label]="theme.theme() === 'dark' ? 'Use the light theme' : 'Use the dark theme'"
+            [title]="theme.theme() === 'dark' ? 'Light theme' : 'Dark theme'">
+      <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" />
+    </button>
+  </div>
+</header>
+
+<aside class="drawer" [class.open]="sidebarOpen()" aria-label="Your documents">
+  <button type="button" class="btn btn--quiet btn--icon close-drawer" aria-label="Hide your documents" (click)="sidebarOpen.set(false)">
+    <app-icon name="close" />
+  </button>
+  <app-library-panel />
+</aside>
+
+<div class="scrim" [class.visible]="sidebarOpen()" (click)="sidebarOpen.set(false)" aria-hidden="true"></div>
+
+<main class="main">
+  @if (health.problem(); as problem) {
+    <div class="note" role="status">
+      <p class="hand note-title">{{ problem.title }}</p>
+      <p class="note-detail">{{ problem.detail }}</p>
+      <span class="note-action">
+        @if (health.stillFailing() && !health.checking()) {
+          <span class="hand still" role="status">still not connected</span>
+        }
+        <button type="button" class="btn btn--line btn--sm" [disabled]="health.checking()"
+                [attr.aria-busy]="health.checking()" (click)="checkAgain()">
+          @if (health.checking()) {
+            <app-icon name="spinner" [size]="14" /> Checking…
+          } @else {
+            Check again
+          }
+        </button>
+      </span>
+    </div>
+  }
+  <app-chat-view class="chat" />
+</main>
+
+<app-paste-dialog />
+
+<div class="toasts" aria-live="polite">
+  @for (toast of toasts.toasts(); track toast.id) {
+    <div class="toast" [attr.data-tone]="toast.tone" role="status">
+      <span>{{ toast.message }}</span>
+      <button type="button" class="toast-close" aria-label="Dismiss" (click)="toasts.dismiss(toast.id)">
+        <app-icon name="close" [size]="14" />
+      </button>
+    </div>
+  }
+</div>

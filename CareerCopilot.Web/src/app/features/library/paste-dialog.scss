@@ -1,0 +1,175 @@
+@use '../../shared/marker' as *;
+@use '../../shared/desk' as *;
+
+.paste {
+  width: min(620px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+  color: var(--ink);
+
+  &[open] {
+    animation: lay-down 0.35s var(--ease);
+  }
+
+  &::backdrop {
+    background: rgb(20 24 28 / 0.35);
+    backdrop-filter: blur(2px);
+  }
+}
+
+// The note is laid on the desk: it drops in slightly rotated and settles.
+@keyframes lay-down {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) rotate(-2.5deg);
+  }
+}
+
+.sheet {
+  position: relative;
+  padding: 1.6rem 1.6rem 1.3rem;
+  border-radius: 3px;
+  background: var(--paper);
+  box-shadow: var(--paper-lift);
+  rotate: -0.5deg;
+
+  &::before {
+    @include tape(110px, -3deg);
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 2.1rem;
+  color: var(--ballpoint);
+}
+
+.lead {
+  margin: 0.35rem 0 1rem;
+  font-size: 0.95rem;
+  color: var(--pencil);
+}
+
+.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.kind {
+  padding: 0.15rem 0;
+  border: none;
+  background: none;
+  font-size: 0.92rem;
+  font-weight: 560;
+  color: var(--pencil);
+
+  &:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  &.selected {
+    color: var(--ink);
+
+    span {
+      @include marker;
+      animation: mark-in 0.35s var(--ease) both;
+    }
+  }
+}
+
+// Ruled notebook paper to write on.
+textarea {
+  display: block;
+  width: 100%;
+  min-height: calc(1.9rem * 7);
+  max-height: 45dvh;
+  padding: 0 0.9rem 0 3.4rem;
+  border: none;
+  border-radius: 2px;
+  outline: none;
+  resize: vertical;
+  @include ruled(1.9rem, 2.6rem);
+  background-attachment: local;
+  box-shadow: inset 0 0 0 1px var(--rule);
+  color: var(--ballpoint);
+  caret-color: var(--ballpoint);
+  font-size: 0.95rem;
+  line-height: 1.9rem;
+
+  &::placeholder {
+    color: var(--pencil-faint);
+  }
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--rule), 0 0 0 2px var(--ballpoint);
+  }
+}
+
+.detected {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.4rem;
+  margin: 0.6rem 0 0;
+  font-size: 0.82rem;
+  color: var(--pencil);
+
+  strong {
+    color: var(--ink);
+    font-weight: 620;
+  }
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 560;
+
+  em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--pencil);
+  }
+
+  input {
+    padding: 0.4rem 0;
+    border: none;
+    border-bottom: 1.5px solid var(--rule-blue);
+    background: transparent;
+    outline: none;
+    color: var(--ballpoint);
+    font-size: 0.95rem;
+
+    &:focus-visible {
+      border-bottom-color: var(--ballpoint);
+    }
+
+    &::placeholder {
+      color: var(--pencil-faint);
+    }
+  }
+}
+
+.problem {
+  margin: 0.9rem 0 0;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--red-pen);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--red-pen);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}

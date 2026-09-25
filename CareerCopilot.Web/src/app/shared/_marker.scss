@@ -1,0 +1,20 @@
+// The highlighter stroke: a chisel-tip swipe sitting on the lower part of the
+// line, slightly ragged at the ends, wrapping cleanly across lines.
+@mixin marker($color: var(--hl)) {
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.1em,
+    color-mix(in srgb, #{$color} 75%, transparent) 0.3em,
+    #{$color} 0.8em,
+    #{$color} calc(100% - 0.8em),
+    color-mix(in srgb, #{$color} 80%, transparent) calc(100% - 0.25em),
+    transparent calc(100% - 0.05em)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 0.78em;
+  background-position: 0 88%;
+  padding: 0 0.22em;
+  margin: 0 -0.22em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

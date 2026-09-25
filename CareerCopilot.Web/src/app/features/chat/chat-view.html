@@ -1,0 +1,127 @@
+<div class="thread" #thread (scroll)="onScroll(thread)">
+  @if (chat.isEmpty()) {
+    <section class="desk-intro">
+      <div class="intro-copy">
+        <h1>Put your résumé next to the job.</h1>
+        <p class="lede">
+          Drop each PDF on its sheet, then ask how well they match, what's missing, or how to pitch yourself.
+          Every answer shows the passages it came from.
+        </p>
+
+        <div class="notepad">
+          <p class="hand notepad-title">try asking</p>
+          <ul class="starters" role="list">
+            @for (q of starters; track q) {
+              <li><button type="button" class="starter" (click)="submit(q)"><span>{{ q }}</span></button></li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div class="sheets">
+        @if (deskIsEmpty()) {
+          <p class="hand pointer" aria-hidden="true">
+            drop them here
+            <svg viewBox="0 0 120 80" width="96" height="64">
+              <path d="M6 10 C 40 4, 88 14, 104 62" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+              <path d="M92 56 L 105 66 L 110 49" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </p>
+        }
+
+        @for (sheet of sheets; track sheet.kind) {
+          @let doc = docs.latest(sheet.kind);
+          @let uploading = uploadingKind(sheet.kind);
+          <div
+            class="sheet"
+            [attr.data-kind]="sheet.kind"
+            [class.filled]="doc"
+            [class.lifted]="dragOver() === sheet.kind"
+            (dragover)="onSheetDragOver($event, sheet.kind)"
+            (dragleave)="dragOver.set(null)"
+            (drop)="onSheetDrop($event, sheet.kind)"
+            (click)="onSheetClick($event, picker)"
+          >
+            <input #picker type="file" accept="application/pdf,.pdf" class="sr-only" tabindex="-1" (change)="onSheetPicked(picker, sheet.kind)" />
+
+            @if (sheet.kind === 'resume') {
+              <svg class="paperclip" viewBox="0 0 26 70" width="22" height="60" aria-hidden="true">
+                <path d="M9 56 V16 a6.5 6.5 0 0 1 13 0 V58 a10 10 0 0 1 -20 0 V20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
+              </svg>
+            }
+
+            <span class="sheet-title"><span class="marker">{{ sheet.title }}</span></span>
+
+            <span class="sketch" aria-hidden="true">
+              @if (sheet.kind === 'resume') {
+                <span class="portrait-row"><i class="portrait"></i><span><i class="name"></i><i class="contact"></i></span></span>
+              }
+              @for (line of sheet.lines; track $index) {
+                <i
+                  [class]="line.style ?? 'line'"
+                  [class.marked]="line.marked"
+                  [style.--w]="line.width + '%'"
+                ></i>
+              }
+            </span>
+
+            <span class="sheet-foot">
+              @if (uploading) {
+                <span class="reading">Reading and indexing…</span>
+              } @else if (doc) {
+                <strong class="file">{{ doc.name }}</strong>
+                <span>
+                  {{ doc.isIndexed ? 'Ready to search.' : 'Not searchable yet.' }} Drop a new PDF or
+                  <button type="button" class="link" (click)="paste.open(sheet.kind)">paste a new one</button>.
+                </span>
+              } @else {
+                <span class="drop-hint">
+                  <strong>Drop the PDF here</strong>
+                  <span>
+                    <button type="button" class="link" (click)="picker.click()">choose a file</button> or
+                    <button type="button" class="link" (click)="paste.open(sheet.kind)">paste text or a link</button>
+                  </span>
+                </span>
+              }
+            </span>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <article class="transcript" aria-live="polite">
+      @for (message of chat.messages(); track message.id) {
+        <app-chat-message [message]="message" (retry)="chat.retry(message.id)" />
+      }
+    </article>
+  }
+</div>
+
+<form class="composer" [class.wide]="chat.isEmpty()" (submit)="$event.preventDefault(); submit()">
+  <div class="slip">
+    <label for="question" class="sr-only">Your question</label>
+    <textarea
+      #input
+      id="question"
+      rows="1"
+      placeholder="Ask about your fit for this job…"
+      [value]="draft()"
+      (input)="draft.set(input.value)"
+      (keydown)="onKeydown($event)"
+    ></textarea>
+
+    @if (chat.isStreaming()) {
+      <button type="button" class="btn btn--line" (click)="chat.stop()">Stop</button>
+    } @else {
+      <button type="submit" class="btn btn--ink ask" [disabled]="!canSend()">Ask</button>
+    }
+  </div>
+  <p class="hint">
+    @switch (docs.indexed().length) {
+      @case (0) { No searchable documents yet, so answers won't have anything to go on. }
+      @case (1) { Searching 1 document. }
+      @default { Searching {{ docs.indexed().length }} documents. }
+    }
+    <span class="keys">Enter asks, Shift + Enter adds a line.</span>
+  </p>
+</form>

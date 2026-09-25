@@ -1,0 +1,37 @@
+// A strip of translucent paper tape, placed across the top edge of an element.
+@mixin tape($width: 84px, $rotate: -3deg) {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: $width;
+  height: 24px;
+  translate: -50% 0;
+  rotate: $rotate;
+  background: var(--tape);
+  // Torn ends
+  clip-path: polygon(3% 0, 97% 4%, 100% 30%, 97% 60%, 100% 100%, 2% 96%, 0 70%, 3% 40%, 0 12%);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.04);
+  z-index: 2;
+}
+
+// Notebook paper: blue rules every $line, a red margin at $margin.
+@mixin ruled($line: 1.9rem, $margin: 3rem, $offset: 0px) {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(
+      to right,
+      transparent $margin,
+      var(--margin-rule) $margin,
+      var(--margin-rule) calc(#{$margin} + 1.5px),
+      transparent calc(#{$margin} + 1.5px)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(#{$line} - 1px),
+      var(--rule-blue) calc(#{$line} - 1px),
+      var(--rule-blue) #{$line}
+    );
+  background-position: 0 0, 0 $offset;
+}

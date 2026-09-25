@@ -1,0 +1,58 @@
+<dialog #dialog class="paste" aria-labelledby="paste-title" (close)="onNativeClose()" (cancel)="busy() && $event.preventDefault()" (click)="onBackdropClick($event)">
+  <form class="sheet" (submit)="$event.preventDefault(); submit()">
+    <h2 id="paste-title" class="hand title">paste {{ noun() }}</h2>
+    <p class="lead">Paste the text, or a link to the page it's on.</p>
+
+    <div class="kinds" role="radiogroup" aria-label="What is it?">
+      @for (k of kinds; track k.value) {
+        <button type="button" role="radio" class="kind" [attr.data-kind]="k.value"
+                [class.selected]="kind() === k.value" [attr.aria-checked]="kind() === k.value"
+                [disabled]="busy()" (click)="kind.set(k.value)">
+          <span>{{ k.label }}</span>
+        </button>
+      }
+    </div>
+
+    <label for="paste-content" class="sr-only">Text or link</label>
+    <textarea
+      #box
+      id="paste-content"
+      rows="9"
+      spellcheck="false"
+      placeholder="https://jobs.example.com/senior-engineer&#10;&#10;…or the whole posting: title, company, responsibilities, requirements."
+      [value]="content()"
+      [readOnly]="busy()"
+      (input)="content.set(box.value); error.set(null)"
+    ></textarea>
+
+    <p class="detected" aria-live="polite">
+      @if (url(); as link) {
+        <app-icon name="external" [size]="14" /> <span>It will be read from <strong>{{ link.hostname }}</strong>.</span>
+      } @else if (content().trim()) {
+        {{ content().trim().length.toLocaleString() }} characters of text.
+      } @else {
+        Works with most job boards and company career pages.
+      }
+    </p>
+
+    @if (!url() && content().trim()) {
+      <label class="name">
+        <span>Name it <em>(optional)</em></span>
+        <input type="text" [value]="title()" (input)="title.set(nameInput.value)" #nameInput
+               placeholder="Senior .NET Engineer at Acme" [readOnly]="busy()" />
+      </label>
+    }
+
+    @if (error(); as message) {
+      <p class="problem" role="alert">{{ message }}</p>
+    }
+
+    <div class="actions">
+      <button type="button" class="btn btn--quiet" [disabled]="busy()" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn--ink" [disabled]="!canSubmit()" [attr.aria-busy]="busy()">
+        @if (busy()) { <app-icon name="spinner" [size]="15" /> }
+        {{ submitLabel() }}
+      </button>
+    </div>
+  </form>
+</dialog>

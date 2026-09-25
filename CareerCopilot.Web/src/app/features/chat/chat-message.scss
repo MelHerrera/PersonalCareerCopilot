@@ -1,0 +1,151 @@
+@use '../../shared/marker' as *;
+
+:host {
+  display: block;
+}
+
+// Your questions: ballpoint blue, set larger — the transcript's headings.
+.question {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--ballpoint);
+  font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+  font-weight: 540;
+  font-variation-settings: 'wdth' 104;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+// While the answer streams in, bold stays unmarked; it gets swiped once done.
+.prose.streaming ::ng-deep strong {
+  background-size: 0% 0.78em;
+}
+
+.prose.streaming ::ng-deep > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  background: var(--ink);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to { visibility: hidden; }
+}
+
+// A green marker sweeping over an empty line while the copilot reads.
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  color: var(--pencil);
+  font-size: 0.95rem;
+}
+
+.stroke {
+  width: 4.5rem;
+  height: 0.75rem;
+  border-radius: 2px 5px 3px 6px;
+  background: var(--hl-green);
+  transform-origin: left center;
+  animation: sweep 1.3s var(--ease) infinite;
+}
+
+@keyframes sweep {
+  0% { transform: scaleX(0); opacity: 1; }
+  60% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+.problem {
+  padding-left: 1rem;
+  border-left: 3px solid var(--red-pen);
+
+  p {
+    margin: 0 0 0.6rem;
+    color: var(--red-pen);
+    font-weight: 540;
+  }
+}
+
+.sources {
+  margin: 1.1rem 0 0;
+  color: var(--pencil);
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.source {
+  border: none;
+  background-color: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  // The global .marker supplies the stroke; a thinner one until opened.
+  background-size: 100% 0.45em;
+  transition: background-size 0.2s var(--ease);
+
+  &:hover,
+  &.open {
+    background-size: 100% 0.78em;
+  }
+}
+
+.clipping {
+  margin: 0.6rem 0 0;
+  padding: 0.95rem 1.1rem;
+  max-width: 62ch;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--hl) 22%, var(--paper));
+  rotate: -0.3deg;
+  animation: unfold 0.25s var(--ease);
+
+  blockquote {
+    margin: 0 0 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  figcaption {
+    font-size: 0.78rem;
+    color: var(--pencil);
+  }
+}
+
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+.after {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--pencil);
+}
+
+.text-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--pencil);
+  font-size: 0.85rem;
+  font-weight: 560;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--pencil) 45%, transparent);
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--ink);
+    text-decoration-color: var(--ink);
+  }
+}

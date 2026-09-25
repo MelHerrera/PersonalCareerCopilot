@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Parser de HTML para importar vacantes desde un link -->
+		<PackageReference Include="AngleSharp" Version="1.8.2" />
+		<!-- Cliente de Azure OpenAI / Azure AI Foundry para chat y embeddings -->
+		<PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+		<!-- Cliente de Azure Blob Storage -->
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
+		<!-- Documento OpenAPI de la API en /openapi/v1.json (solo en Development) -->
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.*" />
+		<!-- Extracción de texto de PDFs, 100% .NET, sin dependencias externas -->
+		<PackageReference Include="PdfPig" Version="0.1.16" />
+	</ItemGroup>
+
+</Project>

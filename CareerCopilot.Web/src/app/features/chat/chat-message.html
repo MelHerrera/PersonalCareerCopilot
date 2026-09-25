@@ -1,0 +1,58 @@
+@let msg = message();
+
+@if (msg.role === 'user') {
+  <p class="question">{{ msg.content }}</p>
+} @else {
+  @if (msg.status === 'streaming' && !msg.content) {
+    <p class="thinking" role="status">
+      <span class="stroke" aria-hidden="true"></span>
+      {{ msg.sources ? 'Writing the answer…' : 'Reading your documents…' }}
+    </p>
+  } @else if (msg.content) {
+    <div #prose class="prose" [class.streaming]="msg.status === 'streaming'" [innerHTML]="msg.content | markdown"></div>
+  }
+
+  @if (msg.status === 'error') {
+    <div class="problem" role="alert">
+      <p>{{ msg.error }}</p>
+      <button type="button" class="btn btn--line btn--sm" (click)="retry.emit()">Ask again</button>
+    </div>
+  }
+
+  @if (msg.sources?.length && msg.status !== 'error') {
+    <p class="sources">
+      From
+      @for (source of msg.sources; track source.fileName; let last = $last; let first = $first) {
+        @if (!first) { {{ last ? ' and ' : ', ' }} }
+        <button
+          type="button"
+          class="source marker"
+          [attr.data-kind]="source.kind"
+          [class.open]="openSource() === source.fileName"
+          [attr.aria-expanded]="openSource() === source.fileName"
+          (click)="toggleSource(source.fileName)"
+        >{{ source.fileName }}</button>
+      }
+    </p>
+    @for (source of msg.sources; track source.fileName) {
+      @if (openSource() === source.fileName) {
+        <figure class="clipping" [attr.data-kind]="source.kind">
+          <blockquote>{{ source.excerpt }}</blockquote>
+          <figcaption>The closest passage in {{ source.fileName }}, {{ (source.score * 100).toFixed(0) }}% relevant</figcaption>
+        </figure>
+      }
+    }
+  }
+
+  @if (msg.status === 'done' || msg.status === 'stopped') {
+    <div class="after">
+      @if (msg.status === 'stopped') {
+        <span>You stopped this answer.</span>
+        <button type="button" class="text-btn" (click)="retry.emit()">Ask again</button>
+      }
+      @if (msg.content) {
+        <button type="button" class="text-btn" (click)="copy()">{{ copied() ? 'Copied' : 'Copy answer' }}</button>
+      }
+    </div>
+  }
+}
