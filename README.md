@@ -1,7 +1,7 @@
 # CareerCopilot
 
 Asistente de búsqueda de empleo con RAG sobre tu CV y descripciones de vacantes,
-construido para ir integrando las capacidades de Azure AI Foundry clase a clase.
+construido para ir integrando las capacidades de Azure AI Foundry en curso de codigo facilito + Microsoft.
 
 ## Qué hace ahora mismo
 
@@ -13,7 +13,7 @@ construido para ir integrando las capacidades de Azure AI Foundry clase a clase.
 
 ## Prerrequisitos
 
-- .NET 8 SDK
+- .NET 10 SDK
 - Un recurso de Azure AI Foundry (o Azure OpenAI) con **dos deployments**:
   - Un modelo de chat, ej. `gpt-4o-mini`
   - Un modelo de embeddings, ej. `text-embedding-3-small`
